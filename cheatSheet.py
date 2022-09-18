@@ -82,8 +82,23 @@ ad_mulgroupby = airlines_data.groupby(["Airline", "AirportFrom", "AirportTo"]) [
 ad_mulcolval = airlines_data.groupby(["Airline", "AirportFrom", "AirportTo"]).aggregate({"id": "count", "Time": "sum"}).reset_index()
 
 # Adding a new column
-ad_newcol = airlines_data["Country"] = "MXN"
+airlines_data["Country"] = "MXN"
 
 # Adding a column using existing columns
+airlines_data["CO_SFO"] = (airlines_data["Airline"] =="CO") & (airlines_data["AirportFrom"] == "SFO")
 
-print(ad_newcol)
+# Dropping a column
+airlines_data.drop(["CO_SFO"], axis=1)
+
+# Summarise using pivot_table with aggregation
+ad_pivottable = airlines_data.pivot_table(index = ["Airline", "AirportFrom", "AirportTo"], values = ["Time"], aggfunc=["sum", "count"]).reset_index(col_level=1) 
+
+# Pivot data using pivot_table where unique rows are not available for index columns
+ad_pivottable2 = airlines_data.pivot_table(index = "Airline", columns="DayOfWeek", values = "id", aggfunc="count", fill_value = 0).reset_index() 
+
+# Summarise using groupby and pivot
+ad_pivogroup = airlines_data.groupby(["Airline", "DayOfWeek"], as_index=False) ["id"].agg("count").reset_index()
+
+ad_pivogroup2 = ad_pivogroup.pivot(index = ["Airline"], columns = "DayOfWeek", values = "id").reset_index()
+
+print(ad_pivogroup2)
